@@ -35,7 +35,7 @@ def get_db():
   finally:
     db.close()
 
-db_dependency = Annotated[Session, get_db]
+db_dependency = Annotated[Session, Depends(get_db)]
 
 # endpoints
 @app.post("/students")
