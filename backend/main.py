@@ -12,7 +12,8 @@ models.Base.metadata.create_all(bind=engine)
 app = FastAPI()
 
 origins = [
-  'http://localhost:5173'
+  'http://localhost:5173',
+
 ]
 
 app.add_middleware(
@@ -54,3 +55,33 @@ def add_student(student: Student, db: db_dependency):
 def get_students(db: db_dependency):
   db_students = db.query(models.Students).all()
   return db_students 
+
+# update student details
+@app.put('/students/{student_id}')
+def update_student(student: Student, student_id: int, db: db_dependency):
+  db_student = db.query(models.Students).filter(models.Students.id == student_id).first()
+
+  if not db_student:
+    raise HTTPException(status_code=404, detail='Student not found')
+
+  db_student.name= student.name
+  db_student.registration_number= student.registration_number
+
+  db.commit()
+  db.refresh(db_student)
+
+  return db_student
+  
+
+# delete student
+@app.delete('/students/{student_id}')
+def delete_student(student_id: int, db: db_dependency):
+  db_student = db.query(models.Students).filter(models.Students.id == student_id).first()
+
+  if not db_student:
+    raise HTTPException(status_code=404, detail='Student not found')
+
+  db.delete(db_student)
+  db.commit()
+
+  return {"message": "Student deleted successfully"}
